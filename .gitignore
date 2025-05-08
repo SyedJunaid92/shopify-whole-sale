@@ -1,0 +1,9 @@
+/node_modules
+/snippets
+/.env
+/deploy.sh
+deploy.sh
+.env
+nginx.conf
+/nginx.conf
+/src/services/test.js
