@@ -117,6 +117,33 @@ app.post("/api/wholesale-prices", async (req, res) => {
   }
 });
 
+// Endpoint for wholesale prices on the cart page
+app.post("/api/cart-details", async (req, res) => {
+  try {
+    const { cart, customer } = req.body;
+
+    // Verify wholesale customer
+    if (!customer.tags.includes("wholesale")) {
+      return res.json({ prices: {} });
+    }
+
+    // Calculate discounts
+    const discount = await calculateWholesaleDiscount(cart, customer);
+    // res.json(discount);
+    // return;
+
+    // Return SKU-specific prices for each tier
+
+    res.json({
+      appliedTier: discount ? discount.tier : null,
+      discount,
+    });
+  } catch (error) {
+    console.error("Error calculating wholesale prices:", error);
+    res.status(500).json({ error: "Error calculating wholesale prices" });
+  }
+});
+
 // Helper function to get customer details
 async function getCustomerDetails(customerId) {
   try {
