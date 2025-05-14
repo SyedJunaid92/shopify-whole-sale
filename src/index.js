@@ -68,7 +68,7 @@ async function testConnection() {
 }
 
 // Test connection on startup
-testConnection();
+//testConnection();
 
 // Test endpoint to verify Shopify connection
 app.get("/test-connection", async (req, res) => {
