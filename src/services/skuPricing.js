@@ -340,7 +340,7 @@ function calculateCartPricing(cart, tier) {
     tier,
     discountSummary: `${tier.replace("_", " ")} Pricing Applied`,
     requirements: {
-      tier1Eligibility: checkTier1Eligibility(
+      eligibility: checkTier1Eligibility(
         validation.skuQuantities,
         validation.originalCartTotal
       ),

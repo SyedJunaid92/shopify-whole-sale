@@ -5,7 +5,10 @@ const cors = require("cors");
 const { shopifyApi, LATEST_API_VERSION } = require("@shopify/shopify-api");
 const { Node: NodeRuntime } = require("@shopify/shopify-api/runtime");
 const { calculateWholesaleDiscount } = require("./services/discountService");
-const { SKU_PRICING } = require("./services/skuPricing");
+const {
+  SKU_PRICING,
+  parseDisplayPriceToShopify,
+} = require("./services/skuPricing");
 const { nodeAdapter } = require("@shopify/shopify-api/adapters/node");
 const {
   createDraftOrder,
@@ -93,7 +96,7 @@ app.get("/test-connection", async (req, res) => {
 // Endpoint for wholesale prices
 app.post("/api/wholesale-prices", async (req, res) => {
   try {
-    const { cart, customer } = req.body;
+    const { cart, customer, current_sku } = req.body;
 
     // Verify wholesale customer
     if (!customer.tags.includes("wholesale")) {
@@ -102,14 +105,42 @@ app.post("/api/wholesale-prices", async (req, res) => {
 
     // Calculate discounts
     const discount = await calculateWholesaleDiscount(cart, customer);
-    // res.json(discount);
-    // return;
+    let current_sku_price;
+
+    if (current_sku && discount) {
+      let sku = current_sku?.includes(" ")
+        ? current_sku?.split(" ")[0]
+        : current_sku;
+      if (
+        discount.tier === "TIER_2" ||
+        discount.tier === "TIER_3" ||
+        (discount.tier == "TIER_1" &&
+          discount?.summary?.requirements?.eligibility?.reason ==
+            "minimum_total")
+      ) {
+        current_sku_price = parseDisplayPriceToShopify(
+          SKU_PRICING[sku]?.prices[discount.tier]
+        );
+      } else if (
+        discount.tier == "TIER_1" &&
+        discount?.summary?.requirements?.eligibility?.reason ==
+          "minimum_quantity" &&
+        discount?.summary?.requirements?.eligibility?.details?.itemQuantities[
+          sku
+        ] >= 3
+      ) {
+        current_sku_price = parseDisplayPriceToShopify(
+          SKU_PRICING[sku]?.prices[discount.tier]
+        );
+      }
+    }
 
     // Return SKU-specific prices for each tier
 
     res.json({
       appliedTier: discount ? discount.tier : null,
       discount,
+      current_sku_price,
     });
   } catch (error) {
     console.error("Error calculating wholesale prices:", error);
@@ -129,8 +160,6 @@ app.post("/api/cart-details", async (req, res) => {
 
     // Calculate discounts
     const discount = await calculateWholesaleDiscount(cart, customer);
-    // res.json(discount);
-    // return;
 
     // Return SKU-specific prices for each tier
 
