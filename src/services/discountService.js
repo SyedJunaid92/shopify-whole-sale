@@ -78,7 +78,7 @@ async function calculateWholesaleDiscount(cart, customer) {
 
     const cartTotal = validation.originalCartTotal;
     const itemCount = validation.totalItems;
-    const lifetimeSpend = 1000; //await getCustomerLifetimeSpend(customer.id);
+    const lifetimeSpend = await getCustomerLifetimeSpend(customer.id);
 
     // Determine tier based on cart contents and customer history
     const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
@@ -219,15 +219,22 @@ function calculateTotalValues(lineItemAdjustments) {
   );
 }
 async function getCustomerLifetimeSpend(customerId) {
-  const client = createClient();
-  const response = await client.get({
-    path: `customers/${customerId}/orders`,
-    query: { status: "any" },
-  });
+  try {
+    const client = createClient();
+    const response = await client.get({
+      path: `customers/${customerId}/orders`,
+      query: { status: "any" },
+    });
 
-  return response.body.orders.reduce((total, order) => {
-    return total + parseFloat(order.total_price);
-  }, 0);
+    console.log("🔍 Customer lifetime spend:", response.body.orders);
+
+    return response.body.orders.reduce((total, order) => {
+      return total + parseFloat(order.total_price);
+    }, 0);
+  } catch (error) {
+    console.error("Error getting customer lifetime spend:", error);
+    return 0;
+  }
 }
 
 async function removeRetailDiscounts(cartId) {
