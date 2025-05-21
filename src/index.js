@@ -33,7 +33,19 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 const shopify = shopifyApi({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET,
-  scopes: ["read_products", "write_products", "read_orders", "write_orders"],
+  scopes: [
+    "write_products",
+    "read_products",
+    "write_orders",
+    "read_orders",
+    "write_cart_transforms",
+    "read_cart_transforms",
+    "read_all_cart_transforms",
+    "write_draft_orders",
+    "read_draft_orders",
+    "write_customers",
+    "read_customer",
+  ],
   hostName: process.env.SHOPIFY_SHOP_NAME,
   apiVersion: LATEST_API_VERSION,
   isEmbeddedApp: false,
@@ -92,12 +104,6 @@ app.get("/test-connection", async (req, res) => {
       status: "error",
       message: "Failed to connect to Shopify",
       error: error.message,
-      data: {
-        apiKey: process.env.SHOPIFY_API_KEY,
-        apiSecretKey: process.env.SHOPIFY_API_SECRET,
-        shopName: process.env.SHOPIFY_SHOP_NAME,
-        accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
-      },
     });
   }
 });
