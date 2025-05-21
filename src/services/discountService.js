@@ -78,7 +78,7 @@ async function calculateWholesaleDiscount(cart, customer) {
 
     const cartTotal = validation.originalCartTotal;
     const itemCount = validation.totalItems;
-    const lifetimeSpend = await getCustomerLifetimeSpend(customer.id);
+    const lifetimeSpend = 1000; //await getCustomerLifetimeSpend(customer.id);
 
     // Determine tier based on cart contents and customer history
     const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
