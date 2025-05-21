@@ -233,7 +233,7 @@ async function getCustomerLifetimeSpend(customerId) {
     }, 0);
   } catch (error) {
     console.error("Error getting customer lifetime spend:", error);
-    return 0;
+    throw error;
   }
 }
 
@@ -260,4 +260,5 @@ async function removeRetailDiscounts(cartId) {
 
 module.exports = {
   calculateWholesaleDiscount,
+  getCustomerLifetimeSpend,
 };

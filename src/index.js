@@ -4,7 +4,10 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { shopifyApi, LATEST_API_VERSION } = require("@shopify/shopify-api");
 const { Node: NodeRuntime } = require("@shopify/shopify-api/runtime");
-const { calculateWholesaleDiscount } = require("./services/discountService");
+const {
+  calculateWholesaleDiscount,
+  getCustomerLifetimeSpend,
+} = require("./services/discountService");
 const {
   SKU_PRICING,
   parseDisplayPriceToShopify,
@@ -104,7 +107,7 @@ app.post("/api/wholesale-prices", async (req, res) => {
     }
 
     // Calculate discounts
-    const discount = await calculateWholesaleDiscount(cart, customer);
+    const discount = await getCustomerLifetimeSpend(customer.id); //await calculateWholesaleDiscount(cart, customer);
     let current_sku_price;
 
     if (current_sku && discount) {
