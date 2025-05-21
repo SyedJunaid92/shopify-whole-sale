@@ -139,18 +139,8 @@ async function getDraftOrderStatus(draftOrderId) {
 
 async function deleteDraftOrder(draftOrderId) {
   try {
-    // const response = await client.get({
-    //   path: `draft_orders/${draftOrderId}`,
-    // });
     const response = await shopify.draftOrder.delete(draftOrderId);
     return { message: "Draft order deleted" };
-
-    // return {
-    //   id: response.id,
-    //   invoice_url: response.invoice_url,
-    //   status: response.status,
-    //   total_price: response.total_price,
-    // };
   } catch (error) {
     console.error("Error getting draft order status:", error);
     throw error;
@@ -172,24 +162,6 @@ async function completeDraftOrder(draftOrderId) {
     throw error;
   }
 }
-
-// async function updateDraftOrder(draftOrderId, updateData) {
-//   try {
-//     const response = await client.put({
-//       path: `draft_orders/${draftOrderId}`,
-//       data: { draft_order: updateData },
-//     });
-
-//     return {
-//       draftOrderId: response.body.draft_order.id,
-//       status: response.body.draft_order.status,
-//       totalPrice: response.body.draft_order.total_price,
-//     };
-//   } catch (error) {
-//     console.error("Error updating draft order:", error);
-//     throw error;
-//   }
-// }
 
 async function updateDraftOrder(draftOrderId, cart, customer) {
   try {

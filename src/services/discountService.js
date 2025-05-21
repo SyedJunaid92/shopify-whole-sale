@@ -28,12 +28,12 @@ const shopify = shopifyApi({
   hostScheme: "https",
   adminApiAccessToken: process.env.SHOPIFY_ACCESS_TOKEN,
 });
-const shopifyTest = new Shopify({
-  shopName: process.env.SHOPIFY_SHOP_NAME,
-  apiKey: process.env.SHOPIFY_API_KEY,
-  password: process.env.SHOPIFY_ACCESS_TOKEN,
-  apiVersion: LATEST_API_VERSION,
-});
+// const shopifyTest = new Shopify({
+//   shopName: process.env.SHOPIFY_SHOP_NAME,
+//   apiKey: process.env.SHOPIFY_API_KEY,
+//   password: process.env.SHOPIFY_ACCESS_TOKEN,
+//   apiVersion: LATEST_API_VERSION,
+// });
 // Create REST client with proper session
 const createClient = () => {
   return new shopify.clients.Rest({
@@ -42,13 +42,6 @@ const createClient = () => {
       accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
     },
   });
-};
-
-// Discount percentages for each tier
-const TIER_DISCOUNTS = {
-  TIER_1: 0.1, // 10% discount
-  TIER_2: 0.15, // 15% discount
-  TIER_3: 0.2, // 20% discount
 };
 
 // Minimum requirements for each tier
@@ -85,7 +78,7 @@ async function calculateWholesaleDiscount(cart, customer) {
 
     const cartTotal = validation.originalCartTotal;
     const itemCount = validation.totalItems;
-    const lifetimeSpend = 500; //await getCustomerLifetimeSpend(customer.id);
+    const lifetimeSpend = await getCustomerLifetimeSpend(customer.id);
 
     // Determine tier based on cart contents and customer history
     const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
@@ -126,81 +119,6 @@ async function calculateWholesaleDiscount(cart, customer) {
         item.discountedUnitPrice * item.quantity
       ),
     }));
-
-    // const draftOrder = await shopifyTest.draftOrder.create({
-    //   line_items: lineItemAdjustments.map((item) => ({
-    //     ...item,
-    //     title: item.title, // e.g., "French Terry Set - Dark Grey"
-    //     quantity: item.quantity,
-
-    //     applied_discount: {
-    //       description: "Tier Discount",
-    //       value_type: "fixed_amount",
-    //       value: String(
-    //         parseFloat(formatShopifyPrice(item.original_price)) -
-    //           parseFloat(formatShopifyPrice(item.discounted_price))
-    //       ),
-    //       amount: String(
-    //         parseFloat(formatShopifyPrice(item.original_price)) -
-    //           parseFloat(formatShopifyPrice(item.discounted_price))
-    //       ),
-    //     },
-
-    //     properties: [
-    //       {
-    //         name: "Discounted Price",
-    //         value: item.discountedUnitPrice,
-    //       },
-    //       {
-    //         name: "Original Price",
-    //         value: `$${item.presentment_price}`,
-    //       },
-    //     ],
-    //   })),
-    //   customer: {
-    //     ...customer,
-    //   },
-    //   use_customer_default_address: true,
-    // });
-    // shopifyTest.draftOrder
-    //   .create({
-    //     line_items: lineItemAdjustments.map((item) => ({
-    //       // ...item,
-    //       title: item.title, // e.g., "French Terry Set - Dark Grey"
-    //       quantity: item.quantity,
-    //       variant_id: item.variant_id,
-    //       applied_discount: {
-    //         description: "Tier Discount",
-    //         value_type: "fixed_amount",
-    //         value: String(item.original_price - item.discountedUnitPrice),
-    //         amount: String(item.original_price - item.discountedUnitPrice),
-    //       },
-
-    //       properties: [
-    //         {
-    //           name: "Discounted Price",
-    //           value: item.discountedUnitPrice,
-    //         },
-    //         {
-    //           name: "Original Price",
-    //           value: `$${item.presentment_price}`,
-    //         },
-    //       ],
-    //     })),
-    //     customer: {
-    //       ...customer,
-    //     },
-    //   })
-    //   .then((draft) => {
-    //     console.log("Draft order created:", draft.invoice_url);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error status:", error.statusCode);
-    //     console.error("Error details:", error.response?.body); // shows Shopify's response
-    //   });
-    // console.log("Draft Order Payload:", JSON.stringify(draftOrder, null, 2));
-    // return draftOrder;
-
     return {
       type: "line_item_adjustment",
       adjustments: lineItemAdjustments,
