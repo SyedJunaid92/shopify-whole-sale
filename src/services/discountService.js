@@ -28,6 +28,12 @@ const shopify = shopifyApi({
   hostScheme: "https",
   adminApiAccessToken: process.env.SHOPIFY_ACCESS_TOKEN,
 });
+const shopify2 = new Shopify({
+  shopName: process.env.SHOPIFY_SHOP_NAME,
+  apiKey: process.env.SHOPIFY_API_KEY,
+  password: process.env.SHOPIFY_ACCESS_TOKEN,
+  apiVersion: LATEST_API_VERSION,
+});
 // const shopifyTest = new Shopify({
 //   shopName: process.env.SHOPIFY_SHOP_NAME,
 //   apiKey: process.env.SHOPIFY_API_KEY,
@@ -220,17 +226,18 @@ function calculateTotalValues(lineItemAdjustments) {
 }
 async function getCustomerLifetimeSpend(customerId) {
   try {
-    const client = createClient();
-    const response = await client.get({
-      path: `customers/${customerId}/orders`,
-      query: { status: "any" },
-    });
+    // const client = createClient();
+    // const response = await client.get({
+    //   path: `customers/${customerId}/orders`,
+    //   query: { status: "any" },
+    // });
+    const totalSpent = (await shopify2.customer.get(customerId)).total_spent;
 
-    console.log("🔍 Customer lifetime spend:", response.body.orders);
+    return +totalSpent;
 
-    return response.body.orders.reduce((total, order) => {
-      return total + parseFloat(order.total_price);
-    }, 0);
+    // return response.body.orders.reduce((total, order) => {
+    //   return total + parseFloat(order.total_price);
+    // }, 0);
   } catch (error) {
     console.error("Error getting customer lifetime spend:", error);
     throw error;
