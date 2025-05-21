@@ -92,6 +92,12 @@ app.get("/test-connection", async (req, res) => {
       status: "error",
       message: "Failed to connect to Shopify",
       error: error.message,
+      data: {
+        apiKey: process.env.SHOPIFY_API_KEY,
+        apiSecretKey: process.env.SHOPIFY_API_SECRET,
+        shopName: process.env.SHOPIFY_SHOP_NAME,
+        accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
+      },
     });
   }
 });
