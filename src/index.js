@@ -144,7 +144,10 @@ app.post("/api/wholesale-prices", async (req, res) => {
     });
   } catch (error) {
     console.error("Error calculating wholesale prices:", error);
-    res.status(500).json({ error: "Error calculating wholesale prices" });
+    res.status(500).json({
+      error: "Error calculating wholesale prices",
+      message: error.message,
+    });
   }
 });
 
