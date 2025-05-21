@@ -240,7 +240,7 @@ async function getCustomerLifetimeSpend(customerId) {
     // }, 0);
   } catch (error) {
     console.error("Error getting customer lifetime spend:", error);
-    throw error;
+    return 0;
   }
 }
 

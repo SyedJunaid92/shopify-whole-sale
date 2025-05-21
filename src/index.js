@@ -107,7 +107,7 @@ app.post("/api/wholesale-prices", async (req, res) => {
     }
 
     // Calculate discounts
-    const discount = await getCustomerLifetimeSpend(customer.id); //await calculateWholesaleDiscount(cart, customer);
+    const discount = await calculateWholesaleDiscount(cart, customer);
     let current_sku_price;
 
     if (current_sku && discount) {
