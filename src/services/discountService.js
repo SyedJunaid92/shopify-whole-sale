@@ -11,24 +11,24 @@ const {
 } = require("./skuPricing");
 
 // Initialize Shopify client
-const shopify = shopifyApi({
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET,
-  scopes: [
-    "read_products",
-    "write_products",
-    "read_customers",
-    "write_customers",
-    "read_orders",
-    "write_orders",
-  ],
-  hostName: process.env.SHOPIFY_SHOP_NAME,
-  apiVersion: LATEST_API_VERSION,
-  isEmbeddedApp: false,
-  hostScheme: "https",
-  adminApiAccessToken: process.env.SHOPIFY_ACCESS_TOKEN,
-});
-const shopify2 = new Shopify({
+// const shopify2 = shopifyApi({
+//   apiKey: process.env.SHOPIFY_API_KEY,
+//   apiSecretKey: process.env.SHOPIFY_API_SECRET,
+//   scopes: [
+//     "read_products",
+//     "write_products",
+//     "read_customers",
+//     "write_customers",
+//     "read_orders",
+//     "write_orders",
+//   ],
+//   hostName: process.env.SHOPIFY_SHOP_NAME,
+//   apiVersion: LATEST_API_VERSION,
+//   isEmbeddedApp: false,
+//   hostScheme: "https",
+//   adminApiAccessToken: process.env.SHOPIFY_ACCESS_TOKEN,
+// });
+const shopify = new Shopify({
   shopName: process.env.SHOPIFY_SHOP_NAME,
   apiKey: process.env.SHOPIFY_API_KEY,
   password: process.env.SHOPIFY_ACCESS_TOKEN,
@@ -41,14 +41,14 @@ const shopify2 = new Shopify({
 //   apiVersion: LATEST_API_VERSION,
 // });
 // Create REST client with proper session
-const createClient = () => {
-  return new shopify.clients.Rest({
-    session: {
-      shop: process.env.SHOPIFY_SHOP_NAME,
-      accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
-    },
-  });
-};
+// const createClient = () => {
+//   return new shopify2.clients.Rest({
+//     session: {
+//       shop: process.env.SHOPIFY_SHOP_NAME,
+//       accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
+//     },
+//   });
+// };
 
 // Minimum requirements for each tier
 const TIER_REQUIREMENTS = {
@@ -109,9 +109,6 @@ async function calculateWholesaleDiscount(cart, customer) {
         items: pricing.items,
       };
     }
-
-    // console.log("Pricing:", pricing.items);
-
     // Create line item adjustments
     const lineItemAdjustments = pricing.items.map((item) => ({
       ...item,
@@ -231,7 +228,7 @@ async function getCustomerLifetimeSpend(customerId) {
     //   path: `customers/${customerId}/orders`,
     //   query: { status: "any" },
     // });
-    const totalSpent = (await shopify2.customer.get(customerId)).total_spent;
+    const totalSpent = (await shopify.customer.get(customerId)).total_spent;
 
     return +totalSpent;
 
@@ -245,12 +242,13 @@ async function getCustomerLifetimeSpend(customerId) {
 }
 
 async function removeRetailDiscounts(cartId) {
-  const client = createClient();
+  // const client = createClient();
   try {
     // Get current discounts
-    const response = await client.get({
-      path: `carts/${cartId}/discounts`,
-    });
+    // const response = await client.get({
+    //   path: `carts/${cartId}/discounts`,
+    // });
+    const response = await shopify.cart.getDiscounts(cartId);
 
     // Remove retail discounts
     for (const discount of response.body.discounts) {
