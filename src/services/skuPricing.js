@@ -27,7 +27,7 @@ const SKU_PRICING = {
   MJT83: {
     description: "FRENCH TERRY ZIP-UP",
     prices: {
-      TIER_1: 45.48,
+      TIER_1: 45.49,
       TIER_2: 42.24,
       TIER_3: 37.99,
     },
