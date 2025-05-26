@@ -176,10 +176,10 @@ function checkTier1Eligibility(skuQuantities, cartTotal) {
 
   return {
     eligible: hasMinQuantity || meetsMinTotal,
-    reason: hasMinQuantity
-      ? "minimum_quantity"
-      : meetsMinTotal
+    reason: meetsMinTotal
       ? "minimum_total"
+      : hasMinQuantity
+      ? "minimum_quantity"
       : null,
     details: {
       hasMinQuantity,
