@@ -134,6 +134,7 @@ async function calculateWholesaleDiscount(cart, customer) {
         requirements: pricing.requirements,
       },
       tier: tier,
+      lifetimeSpend,
       ...calculateTotalValues(lineItemAdjustments),
       // total_original: cartTotal,
       // total_discount: lineItemAdjustments
