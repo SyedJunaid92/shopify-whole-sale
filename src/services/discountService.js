@@ -247,7 +247,7 @@ function calculateNextTierRequirements(
         2
       )} more to reach minimum $300 order value OR ensure minimum quantity of 3 for each item `;
     } else {
-      message = `To qualify for Tier 1 pricing: Ensure minimum quantity of 3 for each item `;
+      message = `To qualify for Tier 1 pricing: Ensure minimum quantity of 3 for each item OR reach minimum $300 order value`;
     }
   } else {
     // For existing tiers, show what's needed for next tier
