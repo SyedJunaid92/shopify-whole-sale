@@ -9,6 +9,7 @@ const {
   formatShopifyPrice,
   decimalFix,
 } = require("./skuPricing");
+const { TIER_REQUIREMENTS } = require("../constant");
 
 // Initialize Shopify client
 // const shopify2 = shopifyApi({
@@ -51,23 +52,6 @@ const shopify = new Shopify({
 // };
 
 // Minimum requirements for each tier
-const TIER_REQUIREMENTS = {
-  TIER_1: {
-    minOrderValue: 300,
-    minQuantityPerItem: 3,
-  },
-  TIER_2: {
-    minOrderValue: 300,
-    minItems: 12,
-    maxItems: 23,
-    minLifetimeSpend: 5000,
-  },
-  TIER_3: {
-    minOrderValue: 100,
-    minItems: 24,
-    minLifetimeSpend: 10000,
-  },
-};
 
 async function calculateWholesaleDiscount(cart, customer) {
   try {
@@ -89,11 +73,20 @@ async function calculateWholesaleDiscount(cart, customer) {
     // Determine tier based on cart contents and customer history
     const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
 
+    // Calculate what's remaining to achieve next tier
+    const nextTierRequirements = calculateNextTierRequirements(
+      cartTotal,
+      itemCount,
+      lifetimeSpend,
+      tier
+    );
+
     if (!tier) {
       return {
         type: "no_discount",
         reason: "Cart does not meet any tier requirements",
         originalTotal: parseDisplayPriceToShopify(cartTotal),
+        nextTierRequirements, // Add next tier requirements even when no discount
       };
     }
 
@@ -135,6 +128,7 @@ async function calculateWholesaleDiscount(cart, customer) {
       },
       tier: tier?.replace("_", " "),
       lifetimeSpend,
+      nextTierRequirements, // Add next tier requirements
       ...calculateTotalValues(lineItemAdjustments),
       // total_original: cartTotal,
       // total_discount: lineItemAdjustments
@@ -185,6 +179,97 @@ function determineTier(cartTotal, itemCount, lifetimeSpend, validation) {
   }
 
   return null;
+}
+
+function calculateNextTierRequirements(
+  cartTotal,
+  itemCount,
+  lifetimeSpend,
+  currentTier
+) {
+  // If already at highest tier, return null
+  if (currentTier === "TIER_3") {
+    return {
+      nextTier: null,
+      message: "You've reached the highest discount tier!",
+      requirements: null,
+    };
+  }
+
+  let nextTier, requirements;
+
+  if (currentTier === "TIER_1") {
+    nextTier = "TIER_2";
+    requirements = {
+      minOrderValue: Math.max(
+        0,
+        TIER_REQUIREMENTS.TIER_2.minOrderValue - cartTotal
+      ),
+      minItems: Math.max(0, TIER_REQUIREMENTS.TIER_2.minItems - itemCount),
+      minLifetimeSpend: Math.max(
+        0,
+        TIER_REQUIREMENTS.TIER_2.minLifetimeSpend - lifetimeSpend
+      ),
+    };
+  } else if (currentTier === "TIER_2") {
+    nextTier = "TIER_3";
+    requirements = {
+      minOrderValue: Math.max(
+        0,
+        TIER_REQUIREMENTS.TIER_3.minOrderValue - cartTotal
+      ),
+      minItems: Math.max(0, TIER_REQUIREMENTS.TIER_3.minItems - itemCount),
+      minLifetimeSpend: Math.max(
+        0,
+        TIER_REQUIREMENTS.TIER_3.minLifetimeSpend - lifetimeSpend
+      ),
+    };
+  } else {
+    // No current tier - check what's needed for Tier 1
+    nextTier = "TIER_1";
+    requirements = {
+      minOrderValue: Math.max(
+        0,
+        TIER_REQUIREMENTS.TIER_1.minOrderValue - cartTotal
+      ),
+      minItems: 0, // Tier 1 doesn't have minItems requirement
+      minLifetimeSpend: 0, // Tier 1 doesn't have lifetime spend requirement
+    };
+  }
+
+  // Generate message based on what's needed
+  const messages = [];
+  if (requirements.minOrderValue > 0) {
+    messages.push(
+      `Add $${requirements.minOrderValue.toFixed(2)} more to your order`
+    );
+  }
+  if (requirements.minItems > 0) {
+    messages.push(`Add ${requirements.minItems} more items`);
+  }
+  if (requirements.minLifetimeSpend > 0) {
+    messages.push(
+      `Spend $${requirements.minLifetimeSpend.toFixed(
+        2
+      )} more lifetime to qualify`
+    );
+  }
+
+  const message =
+    messages.length > 0
+      ? `To reach ${nextTier.replace("_", " ")}: ${messages.join(" OR ")}`
+      : `You qualify for ${nextTier.replace("_", " ")}!`;
+
+  return {
+    nextTier,
+    message,
+    requirements,
+    currentValues: {
+      cartTotal,
+      itemCount,
+      lifetimeSpend,
+    },
+  };
 }
 
 function calculateCartTotal(cart) {
@@ -267,4 +352,5 @@ async function removeRetailDiscounts(cartId) {
 module.exports = {
   calculateWholesaleDiscount,
   getCustomerLifetimeSpend,
+  calculateNextTierRequirements,
 };
