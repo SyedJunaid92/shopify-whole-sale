@@ -238,27 +238,41 @@ function calculateNextTierRequirements(
   }
 
   // Generate message based on what's needed
-  const messages = [];
-  if (requirements.minOrderValue > 0) {
-    messages.push(
-      `Add $${requirements.minOrderValue.toFixed(2)} more to your order`
-    );
-  }
-  if (requirements.minItems > 0) {
-    messages.push(`Add ${requirements.minItems} more items`);
-  }
-  if (requirements.minLifetimeSpend > 0) {
-    messages.push(
-      `Spend $${requirements.minLifetimeSpend.toFixed(
-        2
-      )} more lifetime to qualify`
-    );
-  }
+  let message;
 
-  const message =
-    messages.length > 0
-      ? `To reach ${nextTier.replace("_", " ")}: ${messages.join(" OR ")}`
-      : `You qualify for ${nextTier.replace("_", " ")}!`;
+  if (currentTier === null) {
+    // No tier applicable - provide Tier 1 requirements
+    if (requirements.minOrderValue > 0) {
+      message = `To qualify for Tier 1 pricing: Add $${requirements.minOrderValue.toFixed(
+        2
+      )} more to reach minimum $300 order value OR ensure minimum quantity of 3 for each item (SKU)`;
+    } else {
+      message = `To qualify for Tier 1 pricing: Ensure minimum quantity of 3 for each item (SKU)`;
+    }
+  } else {
+    // For existing tiers, show what's needed for next tier
+    const messages = [];
+    if (requirements.minOrderValue > 0) {
+      messages.push(
+        `Add $${requirements.minOrderValue.toFixed(2)} more to your order`
+      );
+    }
+    if (requirements.minItems > 0) {
+      messages.push(`Add ${requirements.minItems} more items`);
+    }
+    if (requirements.minLifetimeSpend > 0) {
+      messages.push(
+        `Spend $${requirements.minLifetimeSpend.toFixed(
+          2
+        )} more lifetime to qualify`
+      );
+    }
+
+    message =
+      messages.length > 0
+        ? `To reach ${nextTier.replace("_", " ")}: ${messages.join(" OR ")}`
+        : `You qualify for ${nextTier.replace("_", " ")}!`;
+  }
 
   return {
     nextTier,
