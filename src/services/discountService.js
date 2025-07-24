@@ -240,14 +240,14 @@ function calculateNextTierRequirements(
   // Generate message based on what's needed
   let message;
 
-  if (currentTier === null) {
+  if (!currentTier) {
     // No tier applicable - provide Tier 1 requirements
     if (requirements.minOrderValue > 0) {
       message = `To qualify for Tier 1 pricing: Add $${requirements.minOrderValue.toFixed(
         2
-      )} more to reach minimum $300 order value OR ensure minimum quantity of 3 for each item (SKU)`;
+      )} more to reach minimum $300 order value OR ensure minimum quantity of 3 for each item `;
     } else {
-      message = `To qualify for Tier 1 pricing: Ensure minimum quantity of 3 for each item (SKU)`;
+      message = `To qualify for Tier 1 pricing: Ensure minimum quantity of 3 for each item `;
     }
   } else {
     // For existing tiers, show what's needed for next tier
