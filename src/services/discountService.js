@@ -190,7 +190,7 @@ function calculateNextTierRequirements(
   // If already at highest tier, return null
   if (currentTier === "TIER_3") {
     return {
-      nextTier: null,
+      nextTier: "Reached highest tier",
       message: "You've reached the highest discount tier!",
       requirements: null,
     };
