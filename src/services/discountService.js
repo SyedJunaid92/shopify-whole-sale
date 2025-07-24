@@ -87,6 +87,7 @@ async function calculateWholesaleDiscount(cart, customer) {
         reason: "Cart does not meet any tier requirements",
         originalTotal: parseDisplayPriceToShopify(cartTotal),
         nextTierRequirements, // Add next tier requirements even when no discount
+        lifetimeSpend,
       };
     }
 
