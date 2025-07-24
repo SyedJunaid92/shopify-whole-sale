@@ -199,7 +199,7 @@ function calculateNextTierRequirements(
   let nextTier, requirements;
 
   if (currentTier === "TIER_1") {
-    nextTier = "TIER_2";
+    nextTier = "TIER 2";
     requirements = {
       minOrderValue: Math.max(
         0,
@@ -212,7 +212,7 @@ function calculateNextTierRequirements(
       ),
     };
   } else if (currentTier === "TIER_2") {
-    nextTier = "TIER_3";
+    nextTier = "TIER 3";
     requirements = {
       minOrderValue: Math.max(
         0,
@@ -226,7 +226,7 @@ function calculateNextTierRequirements(
     };
   } else {
     // No current tier - check what's needed for Tier 1
-    nextTier = "TIER_1";
+    nextTier = "TIER 1";
     requirements = {
       minOrderValue: Math.max(
         0,
