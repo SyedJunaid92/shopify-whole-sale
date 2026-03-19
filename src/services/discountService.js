@@ -78,7 +78,7 @@ async function calculateWholesaleDiscount(cart, customer) {
       cartTotal,
       itemCount,
       lifetimeSpend,
-      tier
+      tier,
     );
 
     if (!tier) {
@@ -109,11 +109,11 @@ async function calculateWholesaleDiscount(cart, customer) {
       id: cart.items.find((i) => i.sku === item.sku).id,
       savings: item.savings,
       description: `${tier.replace("_", " ")} Price: $${formatShopifyPrice(
-        item.discountedUnitPrice
+        item.discountedUnitPrice,
       )}`,
       discounted_price: parseDisplayPriceToShopify(item.discountedUnitPrice),
       total_discounted_price: parseDisplayPriceToShopify(
-        item.discountedUnitPrice * item.quantity
+        item.discountedUnitPrice * item.quantity,
       ),
     }));
     return {
@@ -150,30 +150,30 @@ async function calculateWholesaleDiscount(cart, customer) {
 
 function determineTier(cartTotal, itemCount, lifetimeSpend, validation) {
   // Check Tier 3 requirements first (highest discount)
-  if (
-    (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
-      itemCount >= TIER_REQUIREMENTS.TIER_3.minItems) ||
-    (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
-      lifetimeSpend >= TIER_REQUIREMENTS.TIER_3.minLifetimeSpend)
-  ) {
-    return "TIER_3";
-  }
+  // if (
+  //   (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
+  //     itemCount >= TIER_REQUIREMENTS.TIER_3.minItems) ||
+  //   (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
+  //     lifetimeSpend >= TIER_REQUIREMENTS.TIER_3.minLifetimeSpend)
+  // ) {
+  //   return "TIER_3";
+  // }
 
-  // Check Tier 2 requirements
-  if (
-    (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
-      itemCount >= TIER_REQUIREMENTS.TIER_2.minItems &&
-      itemCount <= TIER_REQUIREMENTS.TIER_2.maxItems) ||
-    (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
-      lifetimeSpend >= TIER_REQUIREMENTS.TIER_2.minLifetimeSpend)
-  ) {
-    return "TIER_2";
-  }
+  // // Check Tier 2 requirements
+  // if (
+  //   (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
+  //     itemCount >= TIER_REQUIREMENTS.TIER_2.minItems &&
+  //     itemCount <= TIER_REQUIREMENTS.TIER_2.maxItems) ||
+  //   (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
+  //     lifetimeSpend >= TIER_REQUIREMENTS.TIER_2.minLifetimeSpend)
+  // ) {
+  //   return "TIER_2";
+  // }
 
   // Check Tier 1 requirements
   const tier1Eligibility = checkTier1Eligibility(
     validation.skuQuantities,
-    cartTotal
+    cartTotal,
   );
   if (tier1Eligibility.eligible) {
     return "TIER_1";
@@ -186,10 +186,17 @@ function calculateNextTierRequirements(
   cartTotal,
   itemCount,
   lifetimeSpend,
-  currentTier
+  currentTier,
 ) {
   // If already at highest tier, return null
-  if (currentTier === "TIER_3") {
+  // if (currentTier === "TIER_3") {
+  //   return {
+  //     nextTier: "Reached highest tier",
+  //     message: "You've reached the highest discount tier!",
+  //     requirements: null,
+  //   };
+  // }
+  if (currentTier === "TIER_1") {
     return {
       nextTier: "Reached highest tier",
       message: "You've reached the highest discount tier!",
@@ -204,12 +211,12 @@ function calculateNextTierRequirements(
     requirements = {
       minOrderValue: Math.max(
         0,
-        TIER_REQUIREMENTS.TIER_2.minOrderValue - cartTotal
+        TIER_REQUIREMENTS.TIER_2.minOrderValue - cartTotal,
       ),
       minItems: Math.max(0, TIER_REQUIREMENTS.TIER_2.minItems - itemCount),
       minLifetimeSpend: Math.max(
         0,
-        TIER_REQUIREMENTS.TIER_2.minLifetimeSpend - lifetimeSpend
+        TIER_REQUIREMENTS.TIER_2.minLifetimeSpend - lifetimeSpend,
       ),
     };
   } else if (currentTier === "TIER_2") {
@@ -217,12 +224,12 @@ function calculateNextTierRequirements(
     requirements = {
       minOrderValue: Math.max(
         0,
-        TIER_REQUIREMENTS.TIER_3.minOrderValue - cartTotal
+        TIER_REQUIREMENTS.TIER_3.minOrderValue - cartTotal,
       ),
       minItems: Math.max(0, TIER_REQUIREMENTS.TIER_3.minItems - itemCount),
       minLifetimeSpend: Math.max(
         0,
-        TIER_REQUIREMENTS.TIER_3.minLifetimeSpend - lifetimeSpend
+        TIER_REQUIREMENTS.TIER_3.minLifetimeSpend - lifetimeSpend,
       ),
     };
   } else {
@@ -231,7 +238,7 @@ function calculateNextTierRequirements(
     requirements = {
       minOrderValue: Math.max(
         0,
-        TIER_REQUIREMENTS.TIER_1.minOrderValue - cartTotal
+        TIER_REQUIREMENTS.TIER_1.minOrderValue - cartTotal,
       ),
       minItems: 0, // Tier 1 doesn't have minItems requirement
       minLifetimeSpend: 0, // Tier 1 doesn't have lifetime spend requirement
@@ -245,7 +252,7 @@ function calculateNextTierRequirements(
     // No tier applicable - provide Tier 1 requirements
     if (requirements.minOrderValue > 0) {
       message = `To qualify for Tier 1 pricing: Add $${requirements.minOrderValue.toFixed(
-        2
+        2,
       )} more to reach minimum $300 order value OR ensure minimum quantity of 3 for each item `;
     } else {
       message = `To qualify for Tier 1 pricing: Ensure minimum quantity of 3 for each item OR reach minimum $300 order value`;
@@ -255,7 +262,7 @@ function calculateNextTierRequirements(
     const messages = [];
     if (requirements.minOrderValue > 0) {
       messages.push(
-        `Add $${requirements.minOrderValue.toFixed(2)} more to your order`
+        `Add $${requirements.minOrderValue.toFixed(2)} more to your order`,
       );
     }
     if (requirements.minItems > 0) {
@@ -264,8 +271,8 @@ function calculateNextTierRequirements(
     if (requirements.minLifetimeSpend > 0) {
       messages.push(
         `Spend $${requirements.minLifetimeSpend.toFixed(
-          2
-        )} more lifetime to qualify`
+          2,
+        )} more lifetime to qualify`,
       );
     }
 
@@ -318,7 +325,7 @@ function calculateTotalValues(lineItemAdjustments) {
             totals.total_original +
             parseDisplayPriceToShopify(item.original_price) * item.quantity,
         }),
-        initialValues
+        initialValues,
       ) || initialValues
   );
 }

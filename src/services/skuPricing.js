@@ -3,121 +3,151 @@ const SKU_PRICING = {
   "MJT/MJP82": {
     description: "FRENCH TERRY HOODIE SET",
     prices: {
-      TIER_1: 68.99,
+      TIER_1: 46.5,
+      // TIER_1: 68.99,
       TIER_2: 63.99,
       TIER_3: 56.99,
+      RETAIL: 56.99,
     },
   },
   MJT82: {
     description: "FRENCH TERRY HOODIE",
     prices: {
-      TIER_1: 36.99,
+      TIER_1: 24.75,
+      // TIER_1: 36.99,
       TIER_2: 32.49,
       TIER_3: 29.99,
+      RETAIL: 29.99,
     },
   },
   MJP82: {
     description: "FRENCH TERRY JOGGER",
     prices: {
-      TIER_1: 36.99,
+      TIER_1: 24.75,
+      // TIER_1: 36.99,
       TIER_2: 32.49,
       TIER_3: 29.99,
+      RETAIL: 29.99,
     },
   },
   MJT83: {
     description: "FRENCH TERRY ZIP-UP",
     prices: {
-      TIER_1: 45.49,
+      TIER_1: 28.25,
+      // TIER_1: 45.49,
       TIER_2: 42.24,
       TIER_3: 37.99,
+      RETAIL: 37.99,
     },
   },
   MJT84: {
     description: "FRENCH TERRY CREWNECK",
     prices: {
-      TIER_1: 29.99,
+      TIER_1: 19.75,
+      // TIER_1: 29.99,
       TIER_2: 29.24,
       TIER_3: 24.99,
+      RETAIL: 24.99,
     },
   },
   "MJT/MJP64": {
     description: "COTTON FLEECE HOODIE SET",
     prices: {
-      TIER_1: 49.99,
+      TIER_1: 34.5,
+      // TIER_1: 49.99,
       TIER_2: 45.49,
       TIER_3: 41.99,
+      RETAIL: 41.99,
     },
   },
   MJT64: {
     description: "COTTON FLEECE HOODIE",
     prices: {
-      TIER_1: 29.18,
+      TIER_1: 18.25,
+      // TIER_1: 29.18,
       TIER_2: 25.99,
       TIER_3: 22.19,
+      RETAIL: 22.19,
     },
   },
   MJP64: {
     description: "COTTON FLEECE JOGGER",
     prices: {
-      TIER_1: 29.18,
+      TIER_1: 18.25,
+      // TIER_1: 29.18,
       TIER_2: 25.99,
       TIER_3: 22.19,
+      RETAIL: 22.19,
     },
   },
   MT52: {
     description: "CANVAS T-SHIRT",
     prices: {
-      TIER_1: 14.49,
+      TIER_1: 10.0,
+      // TIER_1: 14.49,
       TIER_2: 13.49,
       TIER_3: 12.29,
+      RETAIL: 16.99,
     },
   },
   MS52: {
     description: "CANVAS SHORTS",
     prices: {
-      TIER_1: 20.49,
+      TIER_1: 13.5,
+      // TIER_1: 14.49,
       TIER_2: 17.49,
       TIER_3: 16.49,
+      RETAIL: 16.49,
     },
   },
   MS82: {
     description: "FRENCH TERRY SHORTS",
     prices: {
-      TIER_1: 23.49,
+      TIER_1: 16.0,
+      // TIER_1: 23.49,
       TIER_2: 22.49,
       TIER_3: 20.99,
+      RETAIL: 19.49,
     },
   },
   MT62: {
     description: "VINTAGE WASH T-SHIRT",
     prices: {
-      TIER_1: 21.99,
+      TIER_1: 18.0,
+      // TIER_1: 21.99,
       TIER_2: 19.49,
       TIER_3: 17.99,
+      RETAIL: 24.99,
     },
   },
   MS62: {
     description: "VINTAGE WASH TERRY SHORTS",
     prices: {
-      TIER_1: 28.99,
+      TIER_1: 19.0,
+      // TIER_1: 28.99,
       TIER_2: 25.99,
       TIER_3: 23.99,
+      RETAIL: 23.99,
     },
   },
   "MJT/MJP43": {
     description: "MEN'S TECH FLEECE SETS",
     prices: {
-      TIER_1: 45.49,
+      TIER_1: 32.0,
+      // TIER_1: 45.49,
       TIER_2: 42.24,
       TIER_3: 35.99,
+      RETAIL: 35.99,
     },
   },
   "WJT/WJP43": {
     description: "WOMEN'S TECH FLEECE SETS",
     prices: {
-      TIER_1: 45.49,
+      TIER_1: 32.0,
+      // TIER_1: 45.49,
       TIER_2: 42.24,
       TIER_3: 35.99,
+      RETAIL: 35.99,
     },
   },
 };
@@ -148,10 +178,15 @@ function validateCartItems(cart) {
       skuQuantities[item.sku?.split(" ")[0]] =
         (skuQuantities[item.sku?.split(" ")[0]] || 0) + item.quantity;
       totalItems += item.quantity;
+      // originalCartTotal += parseDisplayPriceToShopify(
+      //   decimalFix(
+      //     parseDisplayPriceToShopify(item.original_price) * item.quantity,
+      //   ),
+      // );
       originalCartTotal += parseDisplayPriceToShopify(
         decimalFix(
-          parseDisplayPriceToShopify(item.original_price) * item.quantity
-        )
+          getSkuPrice(item.sku?.split(" ")[0], "RETAIL") * item.quantity,
+        ),
       );
     }
   });
@@ -168,19 +203,15 @@ function validateCartItems(cart) {
 function checkTier1Eligibility(skuQuantities, cartTotal) {
   // Check if either condition is met:
   // 1. Any item type has 3 or more quantity
-  // 2. Cart total is $300 or more
+  // 2. Cart total is $250 or more   //300
   const hasMinQuantity = Object.values(skuQuantities).some(
-    (quantity) => quantity >= 3
+    (quantity) => quantity >= 3,
   );
-  const meetsMinTotal = cartTotal >= 30000;
+  const meetsMinTotal = cartTotal >= 25000; //30000
 
   return {
-    eligible: hasMinQuantity || meetsMinTotal,
-    reason: meetsMinTotal
-      ? "minimum_total"
-      : hasMinQuantity
-      ? "minimum_quantity"
-      : null,
+    eligible: meetsMinTotal, //hasMinQuantity ||
+    reason: meetsMinTotal ? "minimum_total" : null, //hasMinQuantity ? "minimum_quantity" : null,
     details: {
       hasMinQuantity,
       meetsMinTotal,
@@ -206,8 +237,8 @@ function calculateDetailedPrices(cart, tier, validation) {
     cart.items.forEach((item) => {
       const originalPrice = parseDisplayPriceToShopify(
         decimalFix(
-          parseDisplayPriceToShopify(item.original_price) * item.quantity
-        )
+          parseDisplayPriceToShopify(item.original_price) * item.quantity,
+        ),
       );
       const quantity = item.quantity;
       let discountedUnitPrice;
@@ -224,10 +255,10 @@ function calculateDetailedPrices(cart, tier, validation) {
       }
 
       const discountedTotal = parseDisplayPriceToShopify(
-        decimalFix(parseDisplayPriceToShopify(discountedUnitPrice) * quantity)
+        decimalFix(parseDisplayPriceToShopify(discountedUnitPrice) * quantity),
       );
       const savings = parseDisplayPriceToShopify(
-        decimalFix(originalPrice - discountedTotal)
+        decimalFix(originalPrice - discountedTotal),
       );
 
       details.items.push({
@@ -254,15 +285,15 @@ function calculateDetailedPrices(cart, tier, validation) {
     cart.items.forEach((item) => {
       const originalPrice = parseDisplayPriceToShopify(
         decimalFix(
-          parseDisplayPriceToShopify(item.original_price) * item.quantity
-        )
+          parseDisplayPriceToShopify(item.original_price) * item.quantity,
+        ),
       );
       const discountedUnitPrice = getSkuPrice(item.sku?.split(" ")[0], tier);
       const discountedTotal = parseDisplayPriceToShopify(
-        decimalFix(discountedUnitPrice * item.quantity)
+        decimalFix(discountedUnitPrice * item.quantity),
       );
       const savings = parseDisplayPriceToShopify(
-        decimalFix(originalPrice - discountedTotal)
+        decimalFix(originalPrice - discountedTotal),
       );
 
       details.items.push({
@@ -293,7 +324,7 @@ function calculateCartPricing(cart, tier) {
 
   if (!validation.isValid) {
     throw new Error(
-      `Invalid SKUs found in cart: ${validation.invalidSkus.join(", ")}`
+      `Invalid SKUs found in cart: ${validation.invalidSkus.join(", ")}`,
     );
   }
 
@@ -301,7 +332,7 @@ function calculateCartPricing(cart, tier) {
   if (tier === "TIER_1") {
     const tier1Check = checkTier1Eligibility(
       validation.skuQuantities,
-      validation.originalCartTotal
+      validation.originalCartTotal,
     );
     if (!tier1Check.eligible) {
       return {
@@ -342,7 +373,7 @@ function calculateCartPricing(cart, tier) {
     requirements: {
       eligibility: checkTier1Eligibility(
         validation.skuQuantities,
-        validation.originalCartTotal
+        validation.originalCartTotal,
       ),
       totalItems: validation.totalItems,
       originalCartTotal: validation.originalCartTotal,
