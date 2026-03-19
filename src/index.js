@@ -135,7 +135,8 @@ app.post("/api/wholesale-prices", async (req, res) => {
         //   "minimum_total")
       ) {
         current_sku_price = parseDisplayPriceToShopify(
-          SKU_PRICING[sku]?.prices[discount.tier],
+          SKU_PRICING[sku]?.prices[discount.tier] ||
+            SKU_PRICING[sku]?.prices["TIER_1"],
         );
       } else if (
         discount.tier == "TIER_1" &&
