@@ -129,7 +129,8 @@ app.post("/api/wholesale-prices", async (req, res) => {
       if (
         discount.tier === "TIER_2" ||
         discount.tier === "TIER_3" ||
-        discount.tier === "TIER_1" // (discount.tier == "TIER_1" &&
+        discount.tier === "TIER_1" || // (discount.tier == "TIER_1" &&
+        discount.tier === "TIER 1"
         // discount?.summary?.requirements?.eligibility?.reason ==
         //   "minimum_total")
       ) {
