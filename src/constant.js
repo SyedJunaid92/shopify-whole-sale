@@ -1,6 +1,7 @@
 export const TIER_REQUIREMENTS = {
   TIER_1: {
-    minOrderValue: 300,
+    // minOrderValue: 300
+    minOrderValue: 250,
     minQuantityPerItem: 3,
   },
   TIER_2: {
