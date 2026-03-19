@@ -78,7 +78,7 @@ async function testConnection() {
     if (error.response) {
       console.error(
         "Error details:",
-        JSON.stringify(error.response.body, null, 2)
+        JSON.stringify(error.response.body, null, 2),
       );
     }
     return false;
@@ -129,12 +129,12 @@ app.post("/api/wholesale-prices", async (req, res) => {
       if (
         discount.tier === "TIER_2" ||
         discount.tier === "TIER_3" ||
-        (discount.tier == "TIER_1" &&
-          discount?.summary?.requirements?.eligibility?.reason ==
-            "minimum_total")
+        discount.tier === "TIER_1" // (discount.tier == "TIER_1" &&
+        // discount?.summary?.requirements?.eligibility?.reason ==
+        //   "minimum_total")
       ) {
         current_sku_price = parseDisplayPriceToShopify(
-          SKU_PRICING[sku]?.prices[discount.tier]
+          SKU_PRICING[sku]?.prices[discount.tier],
         );
       } else if (
         discount.tier == "TIER_1" &&
@@ -145,7 +145,7 @@ app.post("/api/wholesale-prices", async (req, res) => {
         ] >= 3
       ) {
         current_sku_price = parseDisplayPriceToShopify(
-          SKU_PRICING[sku]?.prices[discount.tier]
+          SKU_PRICING[sku]?.prices[discount.tier],
         );
       }
     }
