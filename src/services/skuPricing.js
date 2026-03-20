@@ -51,7 +51,7 @@ const SKU_PRICING = {
     },
   },
   "MJT/MJP64": {
-    description: "COTTON FLEECE HOODIE SET",
+    description: "MEN'S FLEECE HOODIE SET",
     prices: {
       TIER_1: 34.5,
       // TIER_1: 49.99,
@@ -61,7 +61,7 @@ const SKU_PRICING = {
     },
   },
   MJT64: {
-    description: "COTTON FLEECE HOODIE",
+    description: "MEN'S FLEECE HOODIE",
     prices: {
       TIER_1: 18.25,
       // TIER_1: 29.18,
@@ -71,7 +71,37 @@ const SKU_PRICING = {
     },
   },
   MJP64: {
-    description: "COTTON FLEECE JOGGER",
+    description: "MEN'S FLEECE JOGGER",
+    prices: {
+      TIER_1: 18.25,
+      // TIER_1: 29.18,
+      TIER_2: 25.99,
+      TIER_3: 22.19,
+      RETAIL: 22.19,
+    },
+  },
+  "WJT/WJP64": {
+    description: "WOMEN'S FLEECE HOODIE SET",
+    prices: {
+      TIER_1: 34.5,
+      // TIER_1: 49.99,
+      TIER_2: 45.49,
+      TIER_3: 41.99,
+      RETAIL: 41.99,
+    },
+  },
+  WJT64: {
+    description: "WOMEN'S FLEECE HOODIE",
+    prices: {
+      TIER_1: 18.25,
+      // TIER_1: 29.18,
+      TIER_2: 25.99,
+      TIER_3: 22.19,
+      RETAIL: 22.19,
+    },
+  },
+  WJP64: {
+    description: "WOMEN'S FLEECE JOGGER",
     prices: {
       TIER_1: 18.25,
       // TIER_1: 29.18,
@@ -98,6 +128,16 @@ const SKU_PRICING = {
       TIER_2: 17.49,
       TIER_3: 16.49,
       RETAIL: 16.49,
+    },
+  },
+  MS52T: {
+    description: "CANVAS TERRY SHORTS",
+    prices: {
+      TIER_1: 14.5,
+      // TIER_1: 23.49,
+      TIER_2: 22.49,
+      TIER_3: 20.99,
+      RETAIL: 17.49,
     },
   },
   MS82: {
