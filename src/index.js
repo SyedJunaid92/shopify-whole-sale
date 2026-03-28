@@ -137,6 +137,7 @@ app.post("/api/wholesale-prices", async (req, res) => {
         current_sku_price = parseDisplayPriceToShopify(
           SKU_PRICING[sku]?.prices[discount.tier] ||
             SKU_PRICING[sku]?.prices["TIER_1"],
+          true,
         );
       } else if (
         discount.tier == "TIER_1" &&
@@ -148,6 +149,7 @@ app.post("/api/wholesale-prices", async (req, res) => {
       ) {
         current_sku_price = parseDisplayPriceToShopify(
           SKU_PRICING[sku]?.prices[discount.tier],
+          true,
         );
       }
     }

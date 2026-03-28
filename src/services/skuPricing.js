@@ -227,6 +227,7 @@ function validateCartItems(cart) {
         decimalFix(
           getSkuPrice(item.sku?.split(" ")[0], "RETAIL") * item.quantity,
         ),
+        true,
       );
     }
   });
@@ -283,6 +284,7 @@ function calculateDetailedPrices(cart, tier, validation) {
       );
       const quantity = item.quantity;
       let discountedUnitPrice;
+      let discountedUnitFromSkuTable = false;
 
       // Apply discount if cart total >= $300 OR this specific item has quantity >= 3
       if (
@@ -291,12 +293,18 @@ function calculateDetailedPrices(cart, tier, validation) {
         validation.skuQuantities[item.sku?.split(" ")[0]] >= 3
       ) {
         discountedUnitPrice = getSkuPrice(item.sku?.split(" ")[0], tier);
+        discountedUnitFromSkuTable = true;
       } else {
         discountedUnitPrice = item.original_price; // Keep original price
       }
 
       const discountedTotal = parseDisplayPriceToShopify(
-        decimalFix(parseDisplayPriceToShopify(discountedUnitPrice) * quantity),
+        decimalFix(
+          parseDisplayPriceToShopify(
+            discountedUnitPrice,
+            discountedUnitFromSkuTable,
+          ) * quantity,
+        ),
       );
       const savings = parseDisplayPriceToShopify(
         decimalFix(originalPrice - discountedTotal),
@@ -311,13 +319,18 @@ function calculateDetailedPrices(cart, tier, validation) {
         description: SKU_PRICING[item.sku?.split(" ")[0]].description,
         quantity: quantity,
         originalUnitPrice: parseDisplayPriceToShopify(item.original_price),
-        discountedUnitPrice: parseDisplayPriceToShopify(discountedUnitPrice),
+        discountedUnitPrice: parseDisplayPriceToShopify(
+          discountedUnitPrice,
+          discountedUnitFromSkuTable,
+        ),
         originalTotal: parseDisplayPriceToShopify(originalPrice),
         discountedTotal,
         savings,
         discountApplied:
-          discountedUnitPrice !==
-          parseDisplayPriceToShopify(item.original_price),
+          parseDisplayPriceToShopify(
+            discountedUnitPrice,
+            discountedUnitFromSkuTable,
+          ) !== parseDisplayPriceToShopify(item.original_price),
       });
 
       details.subtotal += discountedTotal;
@@ -336,7 +349,10 @@ function calculateDetailedPrices(cart, tier, validation) {
       );
       const discountedUnitPrice = getSkuPrice(item.sku?.split(" ")[0], tier);
       const discountedTotal = parseDisplayPriceToShopify(
-        decimalFix(discountedUnitPrice * item.quantity),
+        decimalFix(
+          parseDisplayPriceToShopify(discountedUnitPrice, true) *
+            item.quantity,
+        ),
       );
       const savings = parseDisplayPriceToShopify(
         decimalFix(originalPrice - discountedTotal),
@@ -348,7 +364,10 @@ function calculateDetailedPrices(cart, tier, validation) {
         description: SKU_PRICING[item.sku?.split(" ")[0]].description,
         quantity: item.quantity,
         originalUnitPrice: parseDisplayPriceToShopify(item.original_price),
-        discountedUnitPrice: parseDisplayPriceToShopify(discountedUnitPrice),
+        discountedUnitPrice: parseDisplayPriceToShopify(
+          discountedUnitPrice,
+          true,
+        ),
         originalTotal: parseDisplayPriceToShopify(originalPrice),
         discountedTotal,
         savings,
@@ -443,12 +462,15 @@ const formatShopifyPrice = (amount) => {
   }
   return parseFloat(amount / 100).toFixed(2); // returns a string like "99.99"
 };
-const parseDisplayPriceToShopify = (price) => {
+const parseDisplayPriceToShopify = (price, priceIsInDollars = false) => {
+  if (price == null || price === "") return price;
+  if (priceIsInDollars) {
+    return Math.round(parseFloat(price) * 100);
+  }
   if (price?.toString()?.includes(".")) {
     return Math.round(parseFloat(price) * 100); // e.g., "99.99" → 9999
-  } else {
-    return price;
   }
+  return price;
 };
 
 const decimalFix = (amount, decimalPlaces = 2) => {
