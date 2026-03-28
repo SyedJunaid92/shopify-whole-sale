@@ -272,7 +272,8 @@ function calculateDetailedPrices(cart, tier, validation) {
   // For Tier 1, we need special handling
   if (tier === "TIER_1") {
     const validation = validateCartItems(cart);
-    const cartMeetsMinTotal = validation.originalCartTotal >= 30000;
+    // const cartMeetsMinTotal = validation.originalCartTotal >= 30000;
+    const cartMeetsMinTotal = validation.originalCartTotal >= 25000;
 
     cart.items.forEach((item) => {
       const originalPrice = parseDisplayPriceToShopify(
@@ -301,6 +302,9 @@ function calculateDetailedPrices(cart, tier, validation) {
         decimalFix(originalPrice - discountedTotal),
       );
 
+      console.log("discountedUnitPrice", discountedUnitPrice);
+      console.log("discountedTotal", discountedTotal);
+
       details.items.push({
         ...item,
         sku: item.sku,
@@ -319,6 +323,8 @@ function calculateDetailedPrices(cart, tier, validation) {
       details.subtotal += discountedTotal;
       details.totalSavings += parseDisplayPriceToShopify(savings);
       details.originalTotal += parseDisplayPriceToShopify(originalPrice);
+
+      console.log("details", details);
     });
   } else {
     // For Tier 2 and 3, apply discounts to all items
