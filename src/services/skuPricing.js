@@ -190,6 +190,26 @@ const SKU_PRICING = {
       RETAIL: 35.99,
     },
   },
+  "MJT/MJP65": {
+    description: "MEN'S FLEECE ZIP-UP WIDE LEG SET",
+    prices: {
+      TIER_1: 38.5,
+      // TIER_1: 45.49,
+      TIER_2: 42.24,
+      TIER_3: 35.99,
+      RETAIL: 47.99,
+    },
+  },
+  "MJT/MJP75": {
+    description: "MEN'S FAUX-SUEDE SET",
+    prices: {
+      TIER_1: 42.0,
+      // TIER_1: 45.49,
+      TIER_2: 42.24,
+      TIER_3: 35.99,
+      RETAIL: 49.99,
+    },
+  },
 };
 
 function getSkuPrice(sku, tier) {
@@ -350,8 +370,7 @@ function calculateDetailedPrices(cart, tier, validation) {
       const discountedUnitPrice = getSkuPrice(item.sku?.split(" ")[0], tier);
       const discountedTotal = parseDisplayPriceToShopify(
         decimalFix(
-          parseDisplayPriceToShopify(discountedUnitPrice, true) *
-            item.quantity,
+          parseDisplayPriceToShopify(discountedUnitPrice, true) * item.quantity,
         ),
       );
       const savings = parseDisplayPriceToShopify(
