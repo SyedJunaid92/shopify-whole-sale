@@ -178,6 +178,10 @@ async function updateDraftOrder(draftOrderId, cart, customer) {
       discount = await calculateWholesaleDiscount(cart, customer);
     }
 
+    if (!discount.adjustments || discount.adjustments.length === 0) {
+      discount = await calculateRetailPriceForDraftOrder(cart, customer);
+    }
+
     // return discount;
 
     // Format line items
