@@ -17,6 +17,7 @@ async function createDraftOrder(cart, customer) {
     if (customer.tags && customer.tags.includes("wholesale")) {
       discount = await calculateWholesaleDiscount(cart, customer);
     }
+    console.log("discount", discount);
 
     // return discount;
 
