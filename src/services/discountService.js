@@ -203,7 +203,7 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
       ...item,
       id: cart.items.find((i) => i.sku === item.sku).id,
       savings: item.savings,
-      description: `${tier.replace("_", " ")} Price: $${formatShopifyPrice(
+      description: `RETAIL Price: $${formatShopifyPrice(
         item.discountedUnitPrice,
       )}`,
       discounted_price: parseDisplayPriceToShopify(item.discountedUnitPrice),
