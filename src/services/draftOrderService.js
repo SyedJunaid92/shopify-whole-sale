@@ -21,7 +21,7 @@ async function createDraftOrder(cart, customer) {
     // return discount;
 
     // Format line items
-    const lineItems = discount.adjustments.map((item) => ({
+    const lineItems = discount.adjustments?.map((item) => ({
       ...item,
       properties: [
         {
@@ -39,11 +39,11 @@ async function createDraftOrder(cart, customer) {
             value_type: "fixed_amount",
             value: String(
               +formatShopifyPrice(item.original_price) -
-                +formatShopifyPrice(item.discounted_price)
+                +formatShopifyPrice(item.discounted_price),
             ),
             amount: String(
               +formatShopifyPrice(item.original_price) -
-                +formatShopifyPrice(item.discounted_price)
+                +formatShopifyPrice(item.discounted_price),
             ),
             title: `Wholesale ${discount.tier}`,
           }
@@ -192,11 +192,11 @@ async function updateDraftOrder(draftOrderId, cart, customer) {
             value_type: "fixed_amount",
             value: String(
               +formatShopifyPrice(item.original_price) -
-                +formatShopifyPrice(item.discounted_price)
+                +formatShopifyPrice(item.discounted_price),
             ),
             amount: String(
               +formatShopifyPrice(item.original_price) -
-                +formatShopifyPrice(item.discounted_price)
+                +formatShopifyPrice(item.discounted_price),
             ),
             title: `Wholesale ${discount.tier}`,
           }
