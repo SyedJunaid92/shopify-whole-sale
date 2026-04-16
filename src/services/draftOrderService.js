@@ -17,7 +17,7 @@ async function createDraftOrder(cart, customer) {
     if (customer.tags && customer.tags.includes("wholesale")) {
       discount = await calculateWholesaleDiscount(cart, customer);
     }
-    
+
     // return discount;
 
     const skuKeyFromItem = (item) => item?.sku?.split(" ")?.[0] || item?.sku;
@@ -273,8 +273,11 @@ async function updateDraftOrder(draftOrderId, cart, customer) {
       // invoice_sent_at: new Date().toISOString(),
     };
 
+    console.log("draftOrder", draftOrder);
     // return draftOrder;
     const response = await shopify.draftOrder.update(draftOrderId, draftOrder);
+
+    console.log("response", response);
     // const response = await shopify.draftOrder.create({
     //   line_items: discount?.adjustments?.map((item) => ({
     //     ...item,
