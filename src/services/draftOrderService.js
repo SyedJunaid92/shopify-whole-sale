@@ -91,9 +91,11 @@ async function createDraftOrder(cart, customer) {
       // send_invoice: true,
       // invoice_sent_at: new Date().toISOString(),
     };
+    console.log("draftOrder", draftOrder);
 
     // return draftOrder;
     const response = await shopify.draftOrder.create(draftOrder);
+    console.log("response", response);
     // const response = await shopify.draftOrder.create({
     //   line_items: discount?.adjustments?.map((item) => ({
     //     ...item,
@@ -273,11 +275,9 @@ async function updateDraftOrder(draftOrderId, cart, customer) {
       // invoice_sent_at: new Date().toISOString(),
     };
 
-    console.log("draftOrder", draftOrder);
     // return draftOrder;
     const response = await shopify.draftOrder.update(draftOrderId, draftOrder);
 
-    console.log("response", response);
     // const response = await shopify.draftOrder.create({
     //   line_items: discount?.adjustments?.map((item) => ({
     //     ...item,
