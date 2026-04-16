@@ -187,7 +187,7 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
     // }
 
     // Calculate detailed pricing for the tier
-    const pricing = calculateCartPricing(cart, tier);
+    const pricing = calculateCartPricing(cart, "RETAIL");
 
     // If pricing shows not eligible (especially for Tier 1), return original prices
     if (!pricing.eligible) {
