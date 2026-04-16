@@ -54,30 +54,30 @@ async function createDraftOrder(cart, customer) {
               : null,
           }))
         : (cart?.items || []).map((item) => {
-            const skuKey = skuKeyFromItem(item);
+            // const skuKey = skuKeyFromItem(item);
 
-            // Prefer SKU pricing table; fallback to whatever frontend sent.
-            let retailUnitPrice;
-            try {
-              retailUnitPrice = getSkuPrice(skuKey, "RETAIL");
-            } catch (e) {
-              retailUnitPrice = null;
-            }
+            // // Prefer SKU pricing table; fallback to whatever frontend sent.
+            // let retailUnitPrice;
+            // try {
+            //   retailUnitPrice = getSkuPrice(skuKey, "RETAIL");
+            // } catch (e) {
+            //   retailUnitPrice = null;
+            // }
 
-            const price =
-              retailUnitPrice != null
-                ? retailUnitPrice.toFixed(2)
-                : item?.price != null
-                  ? formatShopifyPrice(item.price)
-                  : item?.original_price != null
-                    ? formatShopifyPrice(item.original_price)
-                    : undefined;
+            // const price =
+            //   retailUnitPrice != null
+            //     ? retailUnitPrice.toFixed(2)
+            //     : item?.price != null
+            //       ? formatShopifyPrice(item.price)
+            //       : item?.original_price != null
+            //         ? formatShopifyPrice(item.original_price)
+            //         : undefined;
 
             return {
               ...item,
               // Shopify draft order line items accept `price` for custom line items.
               // If this item is a variant line item, Shopify will ignore `price`.
-              ...(price != null ? { price } : {}),
+              //  ...(price != null ? { price } : {}),
             };
           });
 
