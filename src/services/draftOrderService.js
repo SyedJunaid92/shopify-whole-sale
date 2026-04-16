@@ -21,9 +21,9 @@ async function createDraftOrder(cart, customer) {
       discount = await calculateWholesaleDiscount(cart, customer);
     }
 
-    const testData = await calculateRetailPriceForDraftOrder(cart, customer);
-
-    console.log("testData", testData);
+    if (!discount.adjustments || discount.adjustments.length === 0) {
+      discount = await calculateRetailPriceForDraftOrder(cart, customer);
+    }
 
     // return discount;
 
