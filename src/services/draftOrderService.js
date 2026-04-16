@@ -1,7 +1,10 @@
-const { calculateWholesaleDiscount } = require("./discountService");
+const {
+  calculateWholesaleDiscount,
+  calculateRetailPriceForDraftOrder,
+} = require("./discountService");
 const Shopify = require("shopify-api-node");
 const { shopifyApi, LATEST_API_VERSION } = require("@shopify/shopify-api");
-const { formatShopifyPrice, getSkuPrice } = require("./skuPricing");
+const { formatShopifyPrice } = require("./skuPricing");
 
 const shopify = new Shopify({
   shopName: process.env.SHOPIFY_SHOP_NAME,
@@ -18,68 +21,41 @@ async function createDraftOrder(cart, customer) {
       discount = await calculateWholesaleDiscount(cart, customer);
     }
 
+    const testData = await calculateRetailPriceForDraftOrder(cart, customer);
+
+    console.log("testData", testData);
+
     // return discount;
 
-    const skuKeyFromItem = (item) => item?.sku?.split(" ")?.[0] || item?.sku;
-
     // Format line items
-    const lineItems =
-      discount?.adjustments?.length > 0
-        ? discount.adjustments.map((item) => ({
-            ...item,
-            properties: [
-              {
-                name: "Discounted Price",
-                value: `$${formatShopifyPrice(item.discounted_price)}`,
-              },
-              {
-                name: "Original Price",
-                value: `$${formatShopifyPrice(item.original_price)}`,
-              },
-            ],
-            applied_discount: discount
-              ? {
-                  description: `Wholesale ${discount.tier} Discount`,
-                  value_type: "fixed_amount",
-                  value: String(
-                    +formatShopifyPrice(item.original_price) -
-                      +formatShopifyPrice(item.discounted_price),
-                  ),
-                  amount: String(
-                    +formatShopifyPrice(item.original_price) -
-                      +formatShopifyPrice(item.discounted_price),
-                  ),
-                  title: `Wholesale ${discount.tier}`,
-                }
-              : null,
-          }))
-        : (cart?.items || []).map((item) => {
-            // const skuKey = skuKeyFromItem(item);
-
-            // // Prefer SKU pricing table; fallback to whatever frontend sent.
-            // let retailUnitPrice;
-            // try {
-            //   retailUnitPrice = getSkuPrice(skuKey, "RETAIL");
-            // } catch (e) {
-            //   retailUnitPrice = null;
-            // }
-
-            // const price =
-            //   retailUnitPrice != null
-            //     ? retailUnitPrice.toFixed(2)
-            //     : item?.price != null
-            //       ? formatShopifyPrice(item.price)
-            //       : item?.original_price != null
-            //         ? formatShopifyPrice(item.original_price)
-            //         : undefined;
-
-            return {
-              ...item,
-              // Shopify draft order line items accept `price` for custom line items.
-              // If this item is a variant line item, Shopify will ignore `price`.
-              //  ...(price != null ? { price } : {}),
-            };
-          });
+    const lineItems = discount.adjustments?.map((item) => ({
+      ...item,
+      properties: [
+        {
+          name: "Discounted Price",
+          value: `$${formatShopifyPrice(item.discounted_price)}`,
+        },
+        {
+          name: "Original Price",
+          value: `$${formatShopifyPrice(item.original_price)}`,
+        },
+      ],
+      applied_discount: discount
+        ? {
+            description: `Wholesale ${discount.tier} Discount`,
+            value_type: "fixed_amount",
+            value: String(
+              +formatShopifyPrice(item.original_price) -
+                +formatShopifyPrice(item.discounted_price),
+            ),
+            amount: String(
+              +formatShopifyPrice(item.original_price) -
+                +formatShopifyPrice(item.discounted_price),
+            ),
+            title: `Wholesale ${discount.tier}`,
+          }
+        : null,
+    }));
 
     // // Create draft order
     const draftOrder = {
@@ -91,15 +67,9 @@ async function createDraftOrder(cart, customer) {
       // send_invoice: true,
       // invoice_sent_at: new Date().toISOString(),
     };
-    console.log("draftOrder", draftOrder);
 
     // return draftOrder;
-    let response = null;
-    try {
-      response = await shopify.draftOrder.create(draftOrder);
-    } catch (error) {
-      console.error("Error creating draft order:", error);
-    }
+    const response = await shopify.draftOrder.create(draftOrder);
     // const response = await shopify.draftOrder.create({
     //   line_items: discount?.adjustments?.map((item) => ({
     //     ...item,
@@ -210,63 +180,35 @@ async function updateDraftOrder(draftOrderId, cart, customer) {
 
     // return discount;
 
-    const skuKeyFromItem = (item) => item?.sku?.split(" ")?.[0] || item?.sku;
-
     // Format line items
-    const lineItems =
-      discount?.adjustments?.length > 0
-        ? discount.adjustments.map((item) => ({
-            ...item,
-            properties: [
-              {
-                name: "Discounted Price",
-                value: `$${formatShopifyPrice(item.discounted_price)}`,
-              },
-              {
-                name: "Original Price",
-                value: `$${formatShopifyPrice(item.original_price)}`,
-              },
-            ],
-            applied_discount: discount
-              ? {
-                  description: `Wholesale ${discount.tier} Discount`,
-                  value_type: "fixed_amount",
-                  value: String(
-                    +formatShopifyPrice(item.original_price) -
-                      +formatShopifyPrice(item.discounted_price),
-                  ),
-                  amount: String(
-                    +formatShopifyPrice(item.original_price) -
-                      +formatShopifyPrice(item.discounted_price),
-                  ),
-                  title: `Wholesale ${discount.tier}`,
-                }
-              : null,
-          }))
-        : (cart?.items || []).map((item) => {
-            const skuKey = skuKeyFromItem(item);
-
-            let retailUnitPrice;
-            try {
-              retailUnitPrice = getSkuPrice(skuKey, "RETAIL");
-            } catch (e) {
-              retailUnitPrice = null;
-            }
-
-            const price =
-              retailUnitPrice != null
-                ? retailUnitPrice.toFixed(2)
-                : item?.price != null
-                  ? formatShopifyPrice(item.price)
-                  : item?.original_price != null
-                    ? formatShopifyPrice(item.original_price)
-                    : undefined;
-
-            return {
-              ...item,
-              ...(price != null ? { price } : {}),
-            };
-          });
+    const lineItems = discount.adjustments.map((item) => ({
+      ...item,
+      properties: [
+        {
+          name: "Discounted Price",
+          value: `$${formatShopifyPrice(item.discounted_price)}`,
+        },
+        {
+          name: "Original Price",
+          value: `$${formatShopifyPrice(item.original_price)}`,
+        },
+      ],
+      applied_discount: discount
+        ? {
+            description: `Wholesale ${discount.tier} Discount`,
+            value_type: "fixed_amount",
+            value: String(
+              +formatShopifyPrice(item.original_price) -
+                +formatShopifyPrice(item.discounted_price),
+            ),
+            amount: String(
+              +formatShopifyPrice(item.original_price) -
+                +formatShopifyPrice(item.discounted_price),
+            ),
+            title: `Wholesale ${discount.tier}`,
+          }
+        : null,
+    }));
 
     // // Create draft order
     const draftOrder = {
@@ -281,7 +223,6 @@ async function updateDraftOrder(draftOrderId, cart, customer) {
 
     // return draftOrder;
     const response = await shopify.draftOrder.update(draftOrderId, draftOrder);
-
     // const response = await shopify.draftOrder.create({
     //   line_items: discount?.adjustments?.map((item) => ({
     //     ...item,

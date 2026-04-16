@@ -148,6 +148,91 @@ async function calculateWholesaleDiscount(cart, customer) {
   }
 }
 
+async function calculateRetailPriceForDraftOrder(cart, customer) {
+  try {
+    // Remove any existing retail discounts
+
+    // await removeRetailDiscounts(cart.token);
+
+    // Validate cart items first
+    const validation = validateCartItems(cart);
+    if (!validation.isValid) {
+      console.error("Invalid SKUs in cart:", validation.invalidSkus);
+      return null;
+    }
+
+    const cartTotal = validation.originalCartTotal;
+    const itemCount = validation.totalItems;
+    const lifetimeSpend = await getCustomerLifetimeSpend(customer.id);
+
+    // Determine tier based on cart contents and customer history
+    const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
+
+    // Calculate what's remaining to achieve next tier
+    const nextTierRequirements = calculateNextTierRequirements(
+      cartTotal,
+      itemCount,
+      lifetimeSpend,
+      tier,
+    );
+
+    // if (!tier) {
+    //   return {
+    //     type: "no_discount",
+    //     reason: "Cart does not meet any tier requirements",
+    //     originalTotal: parseDisplayPriceToShopify(cartTotal),
+    //     nextTierRequirements, // Add next tier requirements even when no discount
+    //     lifetimeSpend,
+    //   };
+    // }
+
+    // Calculate detailed pricing for the tier
+    const pricing = calculateCartPricing(cart, tier);
+
+    // If pricing shows not eligible (especially for Tier 1), return original prices
+    if (!pricing.eligible) {
+      return {
+        type: "no_discount",
+        reason: pricing.reason,
+        originalTotal: pricing.originalTotal,
+        items: pricing.items,
+      };
+    }
+    // Create line item adjustments
+    const lineItemAdjustments = pricing.items.map((item) => ({
+      ...item,
+      id: cart.items.find((i) => i.sku === item.sku).id,
+      savings: item.savings,
+      description: `${tier.replace("_", " ")} Price: $${formatShopifyPrice(
+        item.discountedUnitPrice,
+      )}`,
+      discounted_price: parseDisplayPriceToShopify(item.discountedUnitPrice),
+      total_discounted_price: parseDisplayPriceToShopify(
+        item.discountedUnitPrice * item.quantity,
+      ),
+    }));
+    return {
+      type: "line_item_adjustment",
+      adjustments: lineItemAdjustments,
+      title: `RetailPricing`,
+      summary: {
+        totalSavings: pricing.totalSavings,
+        discountedSubtotal: pricing.subtotal,
+        originalTotal: pricing.originalTotal,
+        tier,
+        requirements: pricing.requirements,
+      },
+      tier: "Retail",
+      lifetimeSpend,
+      nextTierRequirements, // Add next tier requirements
+      ...calculateTotalValues(lineItemAdjustments),
+    };
+  } catch (error) {
+    console.error("Error calculating wholesale discount:", error);
+    throw error;
+  }
+}
+
 function determineTier(cartTotal, itemCount, lifetimeSpend, validation) {
   // Check Tier 3 requirements first (highest discount)
   // if (
@@ -379,4 +464,5 @@ module.exports = {
   calculateWholesaleDiscount,
   getCustomerLifetimeSpend,
   calculateNextTierRequirements,
+  calculateRetailPriceForDraftOrder,
 };
