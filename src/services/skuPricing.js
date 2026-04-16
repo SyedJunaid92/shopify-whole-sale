@@ -330,9 +330,6 @@ function calculateDetailedPrices(cart, tier, validation) {
         decimalFix(originalPrice - discountedTotal),
       );
 
-      console.log("discountedUnitPrice", discountedUnitPrice);
-      console.log("discountedTotal", discountedTotal);
-
       details.items.push({
         ...item,
         sku: item.sku,

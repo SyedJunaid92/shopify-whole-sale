@@ -94,8 +94,12 @@ async function createDraftOrder(cart, customer) {
     console.log("draftOrder", draftOrder);
 
     // return draftOrder;
-    const response = await shopify.draftOrder.create(draftOrder);
-    console.log("response", response);
+    let response = null;
+    try {
+      response = await shopify.draftOrder.create(draftOrder);
+    } catch (error) {
+      console.error("Error creating draft order:", error);
+    }
     // const response = await shopify.draftOrder.create({
     //   line_items: discount?.adjustments?.map((item) => ({
     //     ...item,
