@@ -7,6 +7,7 @@ const { Node: NodeRuntime } = require("@shopify/shopify-api/runtime");
 const {
   calculateWholesaleDiscount,
   getCustomerLifetimeSpend,
+  calculateRetailPriceForDraftOrder,
 } = require("./services/discountService");
 const {
   SKU_PRICING,
@@ -183,7 +184,7 @@ app.post("/api/cart-details", async (req, res) => {
 
     // Calculate discounts
     discount = await calculateWholesaleDiscount(cart, customer);
-    if (discount.type === "no_discount") {
+    if (discount?.type === "no_discount") {
       discount = await calculateRetailPriceForDraftOrder(cart, customer);
     }
 
