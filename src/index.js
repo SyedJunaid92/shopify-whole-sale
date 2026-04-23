@@ -179,9 +179,13 @@ app.post("/api/cart-details", async (req, res) => {
     if (!customer.tags.includes("wholesale")) {
       return res.json({ prices: {} });
     }
+    let discount = null;
 
     // Calculate discounts
-    const discount = await calculateWholesaleDiscount(cart, customer);
+    discount = await calculateWholesaleDiscount(cart, customer);
+    if (discount.type === "no_discount") {
+      discount = await calculateRetailPriceForDraftOrder(cart, customer);
+    }
 
     // Return SKU-specific prices for each tier
 
