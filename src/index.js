@@ -21,6 +21,9 @@ const {
   updateDraftOrder,
   deleteDraftOrder,
 } = require("./services/draftOrderService");
+const {
+  getPaymentRejectionRate,
+} = require("./services/paymentAnalyticsService");
 
 const app = express();
 
@@ -283,6 +286,99 @@ app.put("/api/draft-orders/:id", async (req, res) => {
   } catch (error) {
     console.error("Error updating draft order:", error);
     res.status(500).json({ error: "Error updating draft order" });
+  }
+});
+
+// Payment rejection rate analytics
+// Examples:
+//   GET /api/payment-analytics/rejection-rate
+//   GET /api/payment-analytics/rejection-rate?start_date=2026-01-01&end_date=2026-05-18
+//   GET /api/payment-analytics/rejection-rate?start_date=2026-04-01&max_orders=1000
+app.get("/api/payment-analytics/rejection-rate", async (req, res) => {
+  const routeRequestId =
+    Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  const startedAt = Date.now();
+  const ts = new Date().toISOString();
+  const ROUTE_TAG = "[PaymentAnalyticsRoute]";
+
+  console.log(
+    `${ts} ${ROUTE_TAG} [INFO] [rid=${routeRequestId}] Request received`,
+    JSON.stringify({
+      path: req.originalUrl,
+      query: req.query,
+      ip: req.ip,
+      userAgent: req.get("user-agent"),
+    }),
+  );
+
+  try {
+    const { start_date, end_date, max_orders, page_size } = req.query;
+
+    const parsedMaxOrders = max_orders ? parseInt(max_orders, 10) : undefined;
+    const parsedPageSize = page_size ? parseInt(page_size, 10) : undefined;
+
+    if (
+      parsedMaxOrders !== undefined &&
+      (Number.isNaN(parsedMaxOrders) || parsedMaxOrders <= 0)
+    ) {
+      console.warn(
+        `${new Date().toISOString()} ${ROUTE_TAG} [WARN] [rid=${routeRequestId}] Invalid max_orders`,
+        JSON.stringify({ max_orders }),
+      );
+      return res
+        .status(400)
+        .json({ error: "max_orders must be a positive integer", requestId: routeRequestId });
+    }
+    if (
+      parsedPageSize !== undefined &&
+      (Number.isNaN(parsedPageSize) ||
+        parsedPageSize <= 0 ||
+        parsedPageSize > 250)
+    ) {
+      console.warn(
+        `${new Date().toISOString()} ${ROUTE_TAG} [WARN] [rid=${routeRequestId}] Invalid page_size`,
+        JSON.stringify({ page_size }),
+      );
+      return res.status(400).json({
+        error: "page_size must be an integer between 1 and 250",
+        requestId: routeRequestId,
+      });
+    }
+
+    const result = await getPaymentRejectionRate({
+      startDate: start_date,
+      endDate: end_date,
+      maxOrders: parsedMaxOrders,
+      pageSize: parsedPageSize,
+    });
+
+    console.log(
+      `${new Date().toISOString()} ${ROUTE_TAG} [INFO] [rid=${routeRequestId}] Request completed`,
+      JSON.stringify({
+        durationMs: Date.now() - startedAt,
+        serviceRequestId: result.requestId,
+        ordersScanned: result.ordersScanned,
+        rejectionRate: result.rejectionRate,
+        truncated: result.truncated,
+      }),
+    );
+
+    res.json({ ...result, routeRequestId });
+  } catch (error) {
+    console.error(
+      `${new Date().toISOString()} ${ROUTE_TAG} [ERROR] [rid=${routeRequestId}] Request failed`,
+      JSON.stringify({
+        durationMs: Date.now() - startedAt,
+        errorName: error?.name,
+        errorMessage: error?.message,
+        stack: error?.stack,
+      }),
+    );
+    res.status(500).json({
+      error: "Error computing payment rejection rate",
+      message: error.message,
+      requestId: routeRequestId,
+    });
   }
 });
 
