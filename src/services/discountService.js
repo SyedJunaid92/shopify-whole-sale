@@ -252,15 +252,22 @@ function determineTier(
   validation,
   customer,
 ) {
-  if (customer.tags.includes("TIER_3")) {
-    return "TIER_3";
-  }
-  if (customer.tags.includes("TIER_2")) {
-    return "TIER_2";
-  }
-  if (customer.tags.includes("TIER_1")) {
-    return "TIER_1";
-  }
+  // if (customer.tags.includes("TIER_3")) {
+  //   return "TIER_3";
+  // }
+  // if (customer.tags.includes("TIER_2")) {
+  //   return "TIER_2";
+  // }
+  // if (customer.tags.includes("TIER_1")) {
+  //   return "TIER_1";
+  // }
+  const normalizedTags = new Set(
+    (customer.tags ?? []).map((tag) => tag.trim().toLowerCase()),
+  );
+
+  if (normalizedTags.has("tier_3")) return "TIER_3";
+  if (normalizedTags.has("tier_2")) return "TIER_2";
+  if (normalizedTags.has("tier_1")) return "TIER_1";
 
   // Check Tier 3 requirements first (highest discount)
   if (
