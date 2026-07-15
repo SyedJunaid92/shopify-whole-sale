@@ -126,36 +126,34 @@ app.post("/api/wholesale-prices", async (req, res) => {
     const discount = await calculateWholesaleDiscount(cart, customer);
     let current_sku_price;
 
-    if (current_sku && discount) {
+    if (current_sku && discount && discount?.tier) {
       let sku = current_sku?.includes(" ")
         ? current_sku?.split(" ")[0]
         : current_sku;
-      if (
-        discount.tier === "TIER_2" ||
-        discount.tier === "TIER_3" ||
-        discount.tier === "TIER_1" || // (discount.tier == "TIER_1" &&
-        discount.tier === "TIER 1"
-        // discount?.summary?.requirements?.eligibility?.reason ==
-        //   "minimum_total")
-      ) {
-        current_sku_price = parseDisplayPriceToShopify(
-          SKU_PRICING[sku]?.prices[discount.tier] ||
-            SKU_PRICING[sku]?.prices["TIER_1"],
-          true,
-        );
-      } else if (
-        discount.tier == "TIER_1" &&
-        discount?.summary?.requirements?.eligibility?.reason ==
-          "minimum_quantity" &&
-        discount?.summary?.requirements?.eligibility?.details?.itemQuantities[
-          sku
-        ] >= 3
-      ) {
-        current_sku_price = parseDisplayPriceToShopify(
-          SKU_PRICING[sku]?.prices[discount.tier],
-          true,
-        );
-      }
+      // if (
+
+      //   discount.tier === "TIER_1" || // (discount.tier == "TIER_1" &&
+      //   discount.tier === "TIER 1"
+      //   // discount?.summary?.requirements?.eligibility?.reason ==
+      //   //   "minimum_total")
+      // ) {
+      current_sku_price = parseDisplayPriceToShopify(
+        SKU_PRICING[sku]?.prices[discount.tier?.replace(" ", "_")],
+        true,
+      );
+      // } else if (
+      //   discount.tier == "TIER_1" &&
+      //   discount?.summary?.requirements?.eligibility?.reason ==
+      //     "minimum_quantity" &&
+      //   discount?.summary?.requirements?.eligibility?.details?.itemQuantities[
+      //     sku
+      //   ] >= 3
+      // ) {
+      //   current_sku_price = parseDisplayPriceToShopify(
+      //     SKU_PRICING[sku]?.prices[discount.tier],
+      //     true,
+      //   );
+      // }
     }
 
     // Return SKU-specific prices for each tier
@@ -327,7 +325,10 @@ app.get("/api/payment-analytics/rejection-rate", async (req, res) => {
       );
       return res
         .status(400)
-        .json({ error: "max_orders must be a positive integer", requestId: routeRequestId });
+        .json({
+          error: "max_orders must be a positive integer",
+          requestId: routeRequestId,
+        });
     }
     if (
       parsedPageSize !== undefined &&
