@@ -264,6 +264,7 @@ function determineTier(
   const normalizedTags = new Set(
     (customer.tags ?? []).map((tag) => tag.trim().toLowerCase()),
   );
+  console.log("normalizedTags", normalizedTags);
 
   if (normalizedTags.has("tier_3")) return "TIER_3";
   if (normalizedTags.has("tier_2")) return "TIER_2";
