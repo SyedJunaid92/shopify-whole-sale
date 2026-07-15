@@ -251,7 +251,7 @@ function validateCartItems(cart) {
   };
 }
 
-function checkTier1Eligibility(skuQuantities, cartTotal) {
+function checkTier1Eligibility(skuQuantities, cartTotal, customer) {
   // Check if either condition is met:
   // 1. Any item type has 3 or more quantity
   // 2. Cart total is $250 or more   //300
@@ -259,10 +259,17 @@ function checkTier1Eligibility(skuQuantities, cartTotal) {
     (quantity) => quantity >= 3,
   );
   const meetsMinTotal = cartTotal >= 25000; //30000
+  const normalizedTags = new Set(
+    (customer.tags ?? []).map((tag) => tag.trim().toLowerCase()),
+  );
 
   return {
-    eligible: meetsMinTotal, //hasMinQuantity ||
-    reason: meetsMinTotal ? "minimum_total" : null, //hasMinQuantity ? "minimum_quantity" : null,
+    eligible: normalizedTags.has("tier_1") || meetsMinTotal, //hasMinQuantity ||
+    reason: normalizedTags.has("tier_1")
+      ? "Customer tag"
+      : meetsMinTotal
+        ? "minimum_total"
+        : null, //hasMinQuantity ? "minimum_quantity" : null,
     details: {
       hasMinQuantity,
       meetsMinTotal,
@@ -343,8 +350,6 @@ function calculateDetailedPrices(cart, tier, validation) {
       details.subtotal += discountedTotal;
       details.totalSavings += parseDisplayPriceToShopify(savings);
       details.originalTotal += parseDisplayPriceToShopify(originalPrice);
-
-      console.log("details", details);
     });
   } else {
     // For Tier 2 and 3, apply discounts to all items
@@ -389,7 +394,7 @@ function calculateDetailedPrices(cart, tier, validation) {
   return details;
 }
 
-function calculateCartPricing(cart, tier) {
+function calculateCartPricing(cart, tier, customer) {
   // First validate the cart
   const validation = validateCartItems(cart);
 
@@ -404,6 +409,7 @@ function calculateCartPricing(cart, tier) {
     const tier1Check = checkTier1Eligibility(
       validation.skuQuantities,
       validation.originalCartTotal,
+      customer,
     );
     if (!tier1Check.eligible) {
       return {
@@ -445,6 +451,7 @@ function calculateCartPricing(cart, tier) {
       eligibility: checkTier1Eligibility(
         validation.skuQuantities,
         validation.originalCartTotal,
+        customer,
       ),
       totalItems: validation.totalItems,
       originalCartTotal: validation.originalCartTotal,

@@ -98,7 +98,7 @@ async function calculateWholesaleDiscount(cart, customer) {
     }
 
     // Calculate detailed pricing for the tier
-    const pricing = calculateCartPricing(cart, tier);
+    const pricing = calculateCartPricing(cart, tier, customer);
 
     // If pricing shows not eligible (especially for Tier 1), return original prices
     if (!pricing.eligible) {
@@ -199,7 +199,7 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
     }
 
     // Calculate detailed pricing for the tier
-    const pricing = calculateCartPricing(cart, tier);
+    const pricing = calculateCartPricing(cart, tier, customer);
 
     // If pricing shows not eligible (especially for Tier 1), return original prices
     if (!pricing.eligible) {
@@ -264,11 +264,10 @@ function determineTier(
   const normalizedTags = new Set(
     (customer.tags ?? []).map((tag) => tag.trim().toLowerCase()),
   );
-  console.log("normalizedTags", normalizedTags);
 
-  if (normalizedTags.has("tier_3")) return "TIER_3";
-  if (normalizedTags.has("tier_2")) return "TIER_2";
   if (normalizedTags.has("tier_1")) return "TIER_1";
+  if (normalizedTags.has("tier_2")) return "TIER_2";
+  if (normalizedTags.has("tier_3")) return "TIER_3";
 
   // Check Tier 3 requirements first (highest discount)
   if (
@@ -295,6 +294,7 @@ function determineTier(
   const tier1Eligibility = checkTier1Eligibility(
     validation.skuQuantities,
     cartTotal,
+    customer,
   );
   if (tier1Eligibility.eligible) {
     return "TIER_1";
