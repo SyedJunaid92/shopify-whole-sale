@@ -71,7 +71,13 @@ async function calculateWholesaleDiscount(cart, customer) {
     const lifetimeSpend = await getCustomerLifetimeSpend(customer.id);
 
     // Determine tier based on cart contents and customer history
-    const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
+    const tier = determineTier(
+      cartTotal,
+      itemCount,
+      lifetimeSpend,
+      validation,
+      customer,
+    );
 
     // Calculate what's remaining to achieve next tier
     const nextTierRequirements = calculateNextTierRequirements(
@@ -166,7 +172,13 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
     const lifetimeSpend = await getCustomerLifetimeSpend(customer.id);
 
     // Determine tier based on cart contents and customer history
-    const tier = determineTier(cartTotal, itemCount, lifetimeSpend, validation);
+    const tier = determineTier(
+      cartTotal,
+      itemCount,
+      lifetimeSpend,
+      validation,
+      customer,
+    );
 
     // Calculate what's remaining to achieve next tier
     const nextTierRequirements = calculateNextTierRequirements(
@@ -176,18 +188,18 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
       tier,
     );
 
-    // if (!tier) {
-    //   return {
-    //     type: "no_discount",
-    //     reason: "Cart does not meet any tier requirements",
-    //     originalTotal: parseDisplayPriceToShopify(cartTotal),
-    //     nextTierRequirements, // Add next tier requirements even when no discount
-    //     lifetimeSpend,
-    //   };
-    // }
+    if (!tier) {
+      return {
+        type: "no_discount",
+        reason: "Cart does not meet any tier requirements",
+        originalTotal: parseDisplayPriceToShopify(cartTotal),
+        nextTierRequirements, // Add next tier requirements even when no discount
+        lifetimeSpend,
+      };
+    }
 
     // Calculate detailed pricing for the tier
-    const pricing = calculateCartPricing(cart, "RETAIL");
+    const pricing = calculateCartPricing(cart, tier);
 
     // If pricing shows not eligible (especially for Tier 1), return original prices
     if (!pricing.eligible) {
@@ -203,7 +215,7 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
       ...item,
       id: cart.items.find((i) => i.sku === item.sku).id,
       savings: item.savings,
-      description: `RETAIL Price: $${formatShopifyPrice(
+      description: `${tier.replace("_", " ")} Price: $${formatShopifyPrice(
         item.discountedUnitPrice,
       )}`,
       discounted_price: parseDisplayPriceToShopify(item.discountedUnitPrice),
@@ -214,7 +226,7 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
     return {
       type: "line_item_adjustment",
       adjustments: lineItemAdjustments,
-      title: `RetailPricing`,
+      title: `${tier.replace("_", " ")} Pricing`,
       summary: {
         totalSavings: pricing.totalSavings,
         discountedSubtotal: pricing.subtotal,
@@ -222,7 +234,7 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
         tier,
         requirements: pricing.requirements,
       },
-      tier: "Retail",
+      tier: tier?.replace("_", " "),
       lifetimeSpend,
       nextTierRequirements, // Add next tier requirements
       ...calculateTotalValues(lineItemAdjustments),
@@ -233,27 +245,43 @@ async function calculateRetailPriceForDraftOrder(cart, customer) {
   }
 }
 
-function determineTier(cartTotal, itemCount, lifetimeSpend, validation) {
-  // Check Tier 3 requirements first (highest discount)
-  // if (
-  //   (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
-  //     itemCount >= TIER_REQUIREMENTS.TIER_3.minItems) ||
-  //   (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
-  //     lifetimeSpend >= TIER_REQUIREMENTS.TIER_3.minLifetimeSpend)
-  // ) {
-  //   return "TIER_3";
-  // }
+function determineTier(
+  cartTotal,
+  itemCount,
+  lifetimeSpend,
+  validation,
+  customer,
+) {
+  if (customer.tags.includes("TIER_3")) {
+    return "TIER_3";
+  }
+  if (customer.tags.includes("TIER_2")) {
+    return "TIER_2";
+  }
+  if (customer.tags.includes("TIER_1")) {
+    return "TIER_1";
+  }
 
-  // // Check Tier 2 requirements
-  // if (
-  //   (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
-  //     itemCount >= TIER_REQUIREMENTS.TIER_2.minItems &&
-  //     itemCount <= TIER_REQUIREMENTS.TIER_2.maxItems) ||
-  //   (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
-  //     lifetimeSpend >= TIER_REQUIREMENTS.TIER_2.minLifetimeSpend)
-  // ) {
-  //   return "TIER_2";
-  // }
+  // Check Tier 3 requirements first (highest discount)
+  if (
+    (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
+      itemCount >= TIER_REQUIREMENTS.TIER_3.minItems) ||
+    (cartTotal >= TIER_REQUIREMENTS.TIER_3.minOrderValue &&
+      lifetimeSpend >= TIER_REQUIREMENTS.TIER_3.minLifetimeSpend)
+  ) {
+    return "TIER_3";
+  }
+
+  // Check Tier 2 requirements
+  if (
+    (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
+      itemCount >= TIER_REQUIREMENTS.TIER_2.minItems &&
+      itemCount <= TIER_REQUIREMENTS.TIER_2.maxItems) ||
+    (cartTotal >= TIER_REQUIREMENTS.TIER_2.minOrderValue &&
+      lifetimeSpend >= TIER_REQUIREMENTS.TIER_2.minLifetimeSpend)
+  ) {
+    return "TIER_2";
+  }
 
   // Check Tier 1 requirements
   const tier1Eligibility = checkTier1Eligibility(
@@ -274,20 +302,20 @@ function calculateNextTierRequirements(
   currentTier,
 ) {
   // If already at highest tier, return null
-  // if (currentTier === "TIER_3") {
-  //   return {
-  //     nextTier: "Reached highest tier",
-  //     message: "You've reached the highest discount tier!",
-  //     requirements: null,
-  //   };
-  // }
-  if (currentTier === "TIER_1") {
+  if (currentTier === "TIER_3") {
     return {
       nextTier: "Reached highest tier",
       message: "You've reached the highest discount tier!",
       requirements: null,
     };
   }
+  // if (currentTier === "TIER_1") {
+  //   return {
+  //     nextTier: "Reached highest tier",
+  //     message: "You've reached the highest discount tier!",
+  //     requirements: null,
+  //   };
+  // }
 
   let nextTier, requirements;
 
